@@ -40,6 +40,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
+    phone = Column(String, unique=True, index= True)
     hashed_password = Column(String)
 
 Base.metadata.create_all(bind=engine)
@@ -48,13 +49,14 @@ Base.metadata.create_all(bind=engine)
 class UserCreate(BaseModel):
     username: str
     email: str
+    phone: str
     password: str
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
-class Token(BaseModel):
+class Token(BaseModel): #change it
     access_token: str
     token_type: str
 
@@ -91,10 +93,10 @@ def authenticate_user(db: Session, username: str, password: str):
 # API Endpoints
 @app.post("/register", response_model=dict)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    if db.query(User).filter((User.username == user.username) | (User.email == user.email)).first():
+    if db.query(User).filter((User.username == user.username) | (User.email == user.email) | (User.phone == user.phone)).first():
         raise HTTPException(status_code=400, detail="Username or email already registered")
     hashed_password = get_password_hash(user.password)
-    new_user = User(username=user.username, email=user.email, hashed_password=hashed_password)
+    new_user = User(username=user.username, email=user.email, phone=user.phone ,hashed_password=hashed_password)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
